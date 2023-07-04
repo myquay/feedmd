@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeedMD", "FeedMD.csproj", "{28E561BF-2D53-4AE9-9B6A-11B9E659BB01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "feedmd", "feedmd.csproj", "{28E561BF-2D53-4AE9-9B6A-11B9E659BB01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

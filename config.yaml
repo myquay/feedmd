@@ -1,0 +1,13 @@
+feeds:
+  - https://brandur.org/articles.atom
+  - https://michael-mckenna.com/blog/atom.xml
+  - https://waitbutwhy.com/feed
+  - https://www.joelonsoftware.com/feed/
+  - https://benhoyt.com/writings/rss.xml
+  - https://jvns.ca/atom.xml
+  - https://news.ycombinator.com/rss
+  - https://feeds.hanselman.com/ScottHanselman
+  - https://scott.ee/feed.xml
+  - https://blog.bonnieeisenman.com/feed.xml
+  - https://schnerring.net/index.xml
+time_zone: Pacific/Auckland

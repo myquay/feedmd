@@ -5,9 +5,14 @@ feeds:
   - https://www.joelonsoftware.com/feed/
   - https://benhoyt.com/writings/rss.xml
   - https://jvns.ca/atom.xml
-  - https://news.ycombinator.com/rss
   - https://feeds.hanselman.com/ScottHanselman
   - https://scott.ee/feed.xml
   - https://blog.bonnieeisenman.com/feed.xml
   - https://schnerring.net/index.xml
+  - https://fasterthanli.me/index.xml
+  - https://seirdy.one/posts/atom.xml
+  - https://muffinman.io/atom.xml
+  - https://susam.net/blog/feed.xml
+  - https://borretti.me/feed.xml
+  - https://devopsjournal.io/blog/atom.xml
 time_zone: Pacific/Auckland

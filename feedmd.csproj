@@ -7,10 +7,13 @@
     <Nullable>enable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
+    <TargetName>feedmd</TargetName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugSymbols>False</DebugSymbols>
     <DebugType>None</DebugType>
-    <TargetName>feedmd</TargetName>
   </PropertyGroup>
 
   <ItemGroup>

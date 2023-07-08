@@ -26,47 +26,54 @@ sw.WriteLine("---");
 
 foreach (var feedUri in configuration.Feeds)
 {
-    using var reader = XmlReader.Create(feedUri, new XmlReaderSettings() { Async = true });
-
-    while (reader.Read())
-        if (reader.NodeType == XmlNodeType.Element)
-            break;
-
-    XmlFeedReader feedReader = reader.LocalName == "feed" ?
-        new AtomFeedReader(reader) :
-        new RssFeedReader(reader);
-
-    var sb = new StringBuilder();
-    sb.AppendLine();
-    bool containsRecentItems = false;
-
-    while (await feedReader.Read())
+    try
     {
-        switch (feedReader.ElementType)
+        using var reader = XmlReader.Create(feedUri, new XmlReaderSettings() { Async = true });
+
+        while (reader.Read())
+            if (reader.NodeType == XmlNodeType.Element)
+                break;
+
+        XmlFeedReader feedReader = reader.LocalName == "feed" ?
+            new AtomFeedReader(reader) :
+            new RssFeedReader(reader);
+
+        var sb = new StringBuilder();
+        sb.AppendLine();
+        bool containsRecentItems = false;
+
+        while (await feedReader.Read())
         {
-            case SyndicationElementType.Item:
-                ISyndicationItem item = await feedReader.ReadItem();
-                if (item.Published.UtcDateTime > configuration.Start && item.Published < configuration.End)
-                {
-                    containsRecentItems = true;
-                    sb.AppendLine($"* [{item.Title}]({item.Links.First().Uri})");
-                }
-                break;
-            case SyndicationElementType.Link:
-                ISyndicationLink link = await feedReader.ReadLink();
-                if (link.RelationshipType == "alternate")
-                    sb.AppendLine($"{link.Uri})\n");
-                break;
-            default:
-                ISyndicationContent content = await feedReader.ReadContent();
-                if (content.Name == "title")
-                    sb.Append($"### [{content.Value}](");
-                break;
+            switch (feedReader.ElementType)
+            {
+                case SyndicationElementType.Item:
+                    ISyndicationItem item = await feedReader.ReadItem();
+                    if (item.Published.UtcDateTime > configuration.Start && item.Published < configuration.End)
+                    {
+                        containsRecentItems = true;
+                        sb.AppendLine($"* [{item.Title}]({item.Links.First().Uri})");
+                    }
+                    break;
+                case SyndicationElementType.Link:
+                    ISyndicationLink link = await feedReader.ReadLink();
+                    if (link.RelationshipType == "alternate")
+                        sb.AppendLine($"{link.Uri})\n");
+                    break;
+                default:
+                    ISyndicationContent content = await feedReader.ReadContent();
+                    if (content.Name == "title")
+                        sb.Append($"### [{content.Value}](");
+                    break;
+            }
+        }
+
+        if (containsRecentItems)
+        {
+            sw.WriteLine(sb.ToString());
         }
     }
-
-    if (containsRecentItems)
+    catch (XmlException ex)
     {
-        sw.WriteLine(sb.ToString());
+        Console.WriteLine($"Error reading feed {feedUri}: {ex.Message}");
     }
 }

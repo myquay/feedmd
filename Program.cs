@@ -8,8 +8,11 @@ using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Rss;
 using Microsoft.SyndicationFeed.Atom;
 using System.Text;
+using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 var configuration = Configuration.Load(Environment.GetCommandLineArgs());
+var client = new HttpClient();
 
 Console.WriteLine($"Generating digest for {configuration.Date} ({configuration.TimeZone})");
 
@@ -26,9 +29,24 @@ sw.WriteLine("---");
 
 foreach (var feedUri in configuration.Feeds)
 {
+
     try
     {
-        using var reader = XmlReader.Create(feedUri, new XmlReaderSettings() { Async = true });
+        using var feedData = await client.GetAsync(feedUri, HttpCompletionOption.ResponseHeadersRead);
+
+        if (feedData.Content.Headers.LastModified != null)
+        {
+            var lastModified = feedData.Content.Headers.LastModified.Value.UtcDateTime;
+
+            if (lastModified < configuration.Start || lastModified > configuration.End)
+            {
+                if (configuration.Verbose)
+                    Console.WriteLine($"Skipping {feedUri} as it was last modified at {lastModified} which is outside the digest period ({configuration.Start} - {configuration.End})");
+                continue;
+            }
+        }
+
+        using var reader = XmlReader.Create(await feedData.Content.ReadAsStreamAsync());
 
         while (reader.Read())
             if (reader.NodeType == XmlNodeType.Element)
@@ -40,9 +58,11 @@ foreach (var feedUri in configuration.Feeds)
 
         var sb = new StringBuilder();
         sb.AppendLine();
-        bool containsRecentItems = false;
+        var containsRecentItems = false;
+        var readingPastContent = false;
 
-        while (await feedReader.Read())
+
+        while (await feedReader.Read() && !readingPastContent)
         {
             switch (feedReader.ElementType)
             {
@@ -52,6 +72,10 @@ foreach (var feedUri in configuration.Feeds)
                     {
                         containsRecentItems = true;
                         sb.AppendLine($"* [{item.Title}]({item.Links.First().Uri})");
+                    }
+                    else if(item.Published.UtcDateTime < configuration.Start)
+                    {
+                        readingPastContent = true;
                     }
                     break;
                 case SyndicationElementType.Link:
@@ -63,14 +87,24 @@ foreach (var feedUri in configuration.Feeds)
                     ISyndicationContent content = await feedReader.ReadContent();
                     if (content.Name == "title")
                         sb.Append($"### [{content.Value}](");
+                    if(content.Name == "updated")
+                    {
+                        if(DateTime.TryParse(content.Value, out var lastModified))
+                        {
+                            if (lastModified < configuration.Start || lastModified > configuration.End)
+                            {
+                                if (configuration.Verbose)
+                                    Console.WriteLine($"Skipping {feedUri} as it was last modified at {lastModified} which is outside the digest period ({configuration.Start} - {configuration.End})");
+                                readingPastContent = true;
+                            }
+                        }
+                    }
                     break;
             }
         }
 
         if (containsRecentItems)
-        {
             sw.WriteLine(sb.ToString());
-        }
     }
     catch (XmlException ex)
     {

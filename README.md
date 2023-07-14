@@ -49,6 +49,52 @@ Some common configuration options for the build command are:
 
 See the reference section at the end of this document for a full list of commands and options
 
+## Templating
+
+FeedMD supports templating to modify the output of the markdown file, this is to give the tool flexibility to fit into different workflows. 
+
+The [Liquid templating language](https://shopify.github.io/liquid/basics/introduction/) is used, the context available follows this structure:
+
+```csharp
+{
+  Date: "2023-07-15",
+  Feeds: [{
+    Title: "Feed title",   //String of name of feed
+    Link: "Website link",  //Uri of link to website
+    LastModified: ...      //DateTime when feed was last modified
+    Items:[{
+      Title: "Item title", //String of name of item, e.g. title of blog post
+      Link: "Item link",   //Uri of link to item, e.g. link to blog post
+      Summary: "Item summary", //String of summary of item e.g. blog post summary
+      Content: "Item content", //String of content of item e.g. blog post content
+      PublishDate: ...     //DateTime when item was published e.g. blog post publish date
+    }]
+  }]
+}
+```
+
+### Example template
+
+This is the template used by default, can be modified by running `feedmd init` and modifiying the generated `template.tmd` file.
+
+```liquid
+---
+publishDate: {{ Date }}
+title: 'RSS Daily Digest: {{ Date }}'
+url: /digest/{{ Date }}
+---
+
+{% for feed in Feeds -%}
+  ### [{{ feed.Title }}]({{ feed.Link }})
+
+  {% for item in feed.Items -%}
+	* [{{ item.Title }}]({{ item.Link }})
+  {% endfor %}
+{% else -%}
+  _No feeds today!_
+{% endfor %}
+```
+
 ## Usage Examples
 
 I'm using this to generate the diests for my [RSS reader](https://reader.michael-mckenna.com/) which you [can view the source for here](https://github.com/myquay/reader.michael-mckenna.com). A GitHub action runs FeedMD overnight which generates a new markdown file and saves it to the reader repository. The reader is a markdown website which is regenerated and deployed each time a new digest is created.

@@ -1,0 +1,15 @@
+---
+publishDate: {{ Date }}
+title: 'RSS Daily Digest: {{ Date }}'
+url: /digest/{{ Date }}
+---
+
+{% for feed in Feeds -%}
+  ### [{{ feed.Title }}]({{ feed.Link }})
+
+  {% for item in feed.Items -%}
+	* [{{ item.Title }}]({{ item.Link }})
+  {% endfor %}
+{% else -%}
+  _No feeds today!_
+{% endfor %}

@@ -1,0 +1,9 @@
+feeds:
+  - https://brandur.org/articles.atom
+  - https://michael-mckenna.com/blog/atom.xml
+  - https://waitbutwhy.com/feed
+  - https://www.joelonsoftware.com/feed/
+  - https://jvns.ca/atom.xml
+  - https://feeds.hanselman.com/ScottHanselman
+  - https://blog.bonnieeisenman.com/feed.xml
+time_zone: Pacific/Auckland

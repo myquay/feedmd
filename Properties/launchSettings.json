@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "feedmd": {
+      "commandName": "Project",
+      "commandLineArgs": "build --date 2023-07-10"
+    }
+  }
+}

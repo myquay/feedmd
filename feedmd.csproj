@@ -17,10 +17,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Data\config.yml" />
+    <None Remove="Data\template.tmd" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Fluid.Core" Version="2.4.0" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.2" />
     <PackageReference Include="NodaTime" Version="3.1.9" />
     <PackageReference Include="YamlDotNet" Version="13.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\config.yml" />
+    <EmbeddedResource Include="Data\template.tmd" />
   </ItemGroup>
 
 </Project>

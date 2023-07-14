@@ -60,7 +60,7 @@ namespace FeedMD.Infrastructure
                         {
                             parsedFeed.Items.Add(new FeedItem
                             {
-                                Title = item.Title,
+                                Title = string.IsNullOrEmpty(item.Title) ? $"{item.Links.First().Uri}" : item.Title,
                                 Link = item.Links.First().Uri,
                                 PublishDate = item.Published.UtcDateTime,
                                 Content = item.Description

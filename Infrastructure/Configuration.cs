@@ -68,7 +68,6 @@ namespace FeedMD.Infrastructure
                 date = LocalDatePattern.CreateWithInvariantCulture("yyyy-MM-dd")
                     .Parse(opts.Date)
                     .GetValueOrThrow();
-
             }
 
             //Set start/ end dates

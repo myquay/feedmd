@@ -38,7 +38,10 @@ namespace FeedMD.Infrastructure
         /// </summary>
         internal async Task<Feed> Parse(Uri feed)
         {
-            using var feedData = await HttpClient.GetAsync(feed.AbsoluteUri, HttpCompletionOption.ResponseHeadersRead);
+            var request = new HttpRequestMessage(HttpMethod.Get, feed);
+            request.Headers.IfModifiedSince = _configuration.Start;
+            
+            using var feedData = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             var parsedFeed = new Feed { Link = feed };
 

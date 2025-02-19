@@ -9,33 +9,28 @@ namespace FeedMD.Infrastructure
 {
     class Configuration
     {
-        public string TimeZone { get; set; } = "Pacific/Auckland";
+        public string TimeZone { get; private set; } = "Pacific/Auckland";
 
-        public bool Verbose { get; set; } = false;
+        public bool Verbose { get; set; }
 
-        public DateTime Start { get; set; }
+        public DateTime Start { get; private set; }
 
-        public DateTime End { get; set; }
+        public DateTime End { get; private set; }
 
-        public string Destination { get; set; } = "/";
+        public string Destination { get; private set; } = "/";
 
-        public string[] Feeds { get; set; } = Array.Empty<string>();
+        public string[] Feeds { get; private set; } = Array.Empty<string>();
 
-        public string Date
-        {
-            get
-            {
-                return Instant.FromDateTimeUtc(Start)
-                    .InZone(DateTimeZoneProviders.Tzdb.GetZoneOrNull(TimeZone) ?? DateTimeZoneProviders.Tzdb.GetSystemDefault())
-                    .Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            }
-        }
+        public string Date =>
+            Instant.FromDateTimeUtc(Start)
+                .InZone(DateTimeZoneProviders.Tzdb.GetZoneOrNull(TimeZone) ?? DateTimeZoneProviders.Tzdb.GetSystemDefault())
+                .Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-        public string? Template { get; set; }
+        public string? Template { get; private set; }
 
-        public bool Strict { get; set; }
+        public bool Strict { get; private set; }
         
-        public int MaxDtdCharacters { get; set; }
+        public int MaxDtdCharacters { get; private set; }
         
         public static Configuration? Load(BuildOptions opts)
         {
@@ -56,14 +51,14 @@ namespace FeedMD.Infrastructure
                 new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream($"feedmd.Data.{FileName.TEMPLATE}")!).ReadToEnd();
 
             //Set Time Zone
-            configuration.TimeZone = opts?.TimeZone ?? yamlOptions.TimeZone ?? configuration.TimeZone;
+            configuration.TimeZone = opts.TimeZone ?? yamlOptions.TimeZone ?? configuration.TimeZone;
 
             var zone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(configuration.TimeZone) ?? DateTimeZoneProviders.Tzdb.GetSystemDefault();
             var date = Instant.FromDateTimeUtc(DateTime.UtcNow)
                 .InZone(zone).Date.PlusDays(-1);
 
             //Set the date of the digest
-            if (opts?.Date != null)
+            if (opts.Date != null)
             {
                 date = LocalDatePattern.CreateWithInvariantCulture("yyyy-MM-dd")
                     .Parse(opts.Date)

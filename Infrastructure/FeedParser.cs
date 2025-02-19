@@ -21,9 +21,9 @@ namespace FeedMD.Infrastructure
             return client;
         });
 
-        static HttpClient HttpClient => Lazy.Value;
+        private static HttpClient HttpClient => Lazy.Value;
 
-        readonly Configuration _configuration;
+        private readonly Configuration _configuration;
 
         /// <summary>
         /// Constructor
@@ -31,7 +31,7 @@ namespace FeedMD.Infrastructure
         /// <param name="configuration"></param>
         internal FeedParser(Configuration configuration)
         {
-            this._configuration = configuration;
+            _configuration = configuration;
         }
 
         /// <summary>

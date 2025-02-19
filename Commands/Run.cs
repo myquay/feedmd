@@ -12,20 +12,18 @@ namespace FeedMD.Commands
             return 1;
         }
 
-        internal async static Task<int> BuildOptions(BuildOptions opts)
+        internal static async Task<int> BuildOptions(BuildOptions opts)
         {
             var configuration = Configuration.Load(opts);
 
             if(configuration == null)
                 return 1;
 
-            var client = new HttpClient();
-
             Console.WriteLine($"Generating digest for {configuration.Date} ({configuration.TimeZone})");
 
             Directory.CreateDirectory(configuration.Destination);
-            using var fs = new FileStream($"{configuration.Destination}/{configuration.Date}.md", FileMode.Create);
-            using var sw = new StreamWriter(fs);
+            await using var fs = new FileStream($"{configuration.Destination}/{configuration.Date}.md", FileMode.Create);
+            await using var sw = new StreamWriter(fs);
 
             var feedParser = new FeedParser(configuration);
             List<Feed> feeds = new();
@@ -57,7 +55,7 @@ namespace FeedMD.Commands
                     Feeds = feeds.Where(f => f.Items.Any()).ToArray(),
                 }, options);
 
-                await sw.WriteAsync(template.Render(context));
+                await sw.WriteAsync(await template.RenderAsync(context));
             }
             else
             {
@@ -68,14 +66,14 @@ namespace FeedMD.Commands
             return 0;
         }
 
-        internal async static Task<int> InitOptions(InitOptions opts)
+        internal static async Task<int> InitOptions(InitOptions opts)
         {
-            using var configStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"feedmd.Data.{FileName.CONFIG}")!;
-            using var fs = new FileStream(FileName.CONFIG, FileMode.Create);
+            await using var configStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"feedmd.Data.{FileName.CONFIG}")!;
+            await using var fs = new FileStream(FileName.CONFIG, FileMode.Create);
             await configStream.CopyToAsync(fs);
 
-            using var templateStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"feedmd.Data.{FileName.TEMPLATE}")!;
-            using var ts = new FileStream(FileName.TEMPLATE, FileMode.Create);
+            await using var templateStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"feedmd.Data.{FileName.TEMPLATE}")!;
+            await using var ts = new FileStream(FileName.TEMPLATE, FileMode.Create);
             await templateStream.CopyToAsync(ts);
 
             return 0;

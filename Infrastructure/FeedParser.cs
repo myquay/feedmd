@@ -1,4 +1,5 @@
-﻿using Microsoft.SyndicationFeed.Atom;
+﻿using System.Net;
+using Microsoft.SyndicationFeed.Atom;
 using Microsoft.SyndicationFeed.Rss;
 using Microsoft.SyndicationFeed;
 using System.Xml;
@@ -45,6 +46,12 @@ namespace FeedMD.Infrastructure
 
             var parsedFeed = new Feed { Link = feed };
 
+            if(feedData.StatusCode == HttpStatusCode.NotModified) //No need to parse if not modified
+                return parsedFeed;
+            
+            if(feedData.StatusCode != HttpStatusCode.OK)
+                throw new Exception($"Error reading feed {feed}: {feedData.StatusCode}");
+            
             using var reader = XmlReader.Create(await feedData.Content.ReadAsStreamAsync(), new XmlReaderSettings
             {
                 DtdProcessing = _configuration.Strict ? DtdProcessing.Prohibit : DtdProcessing.Parse,

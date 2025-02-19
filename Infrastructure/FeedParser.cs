@@ -62,40 +62,51 @@ namespace FeedMD.Infrastructure
 
             while (await feedReader.Read())
             {
-                switch (feedReader.ElementType)
+                try
                 {
-                    case SyndicationElementType.Item:
-                        ISyndicationItem item = await feedReader.ReadItem();
-                        var updated = item.Published.UtcDateTime == DateTime.MinValue ? item.LastUpdated.UtcDateTime : item.Published.UtcDateTime;
+                    switch (feedReader.ElementType)
+                    {
+                        case SyndicationElementType.Item:
+                            ISyndicationItem item = await feedReader.ReadItem();
+                            var updated = item.Published.UtcDateTime == DateTime.MinValue
+                                ? item.LastUpdated.UtcDateTime
+                                : item.Published.UtcDateTime;
 
-                        if (updated > _configuration.Start && updated < _configuration.End)
-                        {
-                            parsedFeed.Items.Add(new FeedItem
+                            if (updated > _configuration.Start && updated < _configuration.End)
                             {
-                                Title = string.IsNullOrEmpty(item.Title) ? $"{item.Links.First().Uri}" : item.Title,
-                                Link = item.Links.First().Uri,
-                                PublishDate = item.Published.UtcDateTime,
-                                Content = item.Description
-                            });
-                        }
-                        else if (updated < _configuration.Start)
-                            return parsedFeed;
-                        break;
-                    case SyndicationElementType.Link:
-                        ISyndicationLink link = await feedReader.ReadLink();
-                        if (link.RelationshipType == "alternate")
-                            parsedFeed.Link = link.Uri;
-                        break;
-                    default:
-                        ISyndicationContent content = await feedReader.ReadContent();
-                        if (content.Name == "title")
-                            parsedFeed.Title = content.Value;
-                        if (content.Name == "updated")
-                        {
-                            if (DateTime.TryParse(content.Value, out var lastModified))
-                                parsedFeed.LastModified = lastModified;
-                        }
-                        break;
+                                parsedFeed.Items.Add(new FeedItem
+                                {
+                                    Title = string.IsNullOrEmpty(item.Title) ? $"{item.Links.First().Uri}" : item.Title,
+                                    Link = item.Links.First().Uri,
+                                    PublishDate = item.Published.UtcDateTime,
+                                    Content = item.Description
+                                });
+                            }
+                            else if (updated < _configuration.Start)
+                                return parsedFeed;
+
+                            break;
+                        case SyndicationElementType.Link:
+                            ISyndicationLink link = await feedReader.ReadLink();
+                            if (link.RelationshipType == "alternate")
+                                parsedFeed.Link = link.Uri;
+                            break;
+                        default:
+                            ISyndicationContent content = await feedReader.ReadContent();
+                            if (content.Name == "title")
+                                parsedFeed.Title = content.Value;
+                            if (content.Name == "updated")
+                            {
+                                if (DateTime.TryParse(content.Value, out var lastModified))
+                                    parsedFeed.LastModified = lastModified;
+                            }
+
+                            break;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Error reading feed item {feedReader.ElementName}: {ex.Message}");
                 }
             }
 

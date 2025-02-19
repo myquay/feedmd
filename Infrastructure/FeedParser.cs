@@ -1,12 +1,6 @@
-﻿using FeedMD.Infrastructure;
-using Microsoft.SyndicationFeed.Atom;
+﻿using Microsoft.SyndicationFeed.Atom;
 using Microsoft.SyndicationFeed.Rss;
 using Microsoft.SyndicationFeed;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace FeedMD.Infrastructure
@@ -17,8 +11,18 @@ namespace FeedMD.Infrastructure
     /// </summary>
     internal class FeedParser
     {
-        readonly Configuration configuration;
-        readonly HttpClient client = new();
+        private static readonly Lazy<HttpClient> Lazy = new(() =>
+        {
+            var client = new HttpClient();
+            
+            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "feedmd/0.0.4");
+
+            return client;
+        });
+
+        static HttpClient HttpClient => Lazy.Value;
+
+        readonly Configuration _configuration;
 
         /// <summary>
         /// Constructor
@@ -26,7 +30,7 @@ namespace FeedMD.Infrastructure
         /// <param name="configuration"></param>
         internal FeedParser(Configuration configuration)
         {
-            this.configuration = configuration;
+            this._configuration = configuration;
         }
 
         /// <summary>
@@ -34,13 +38,18 @@ namespace FeedMD.Infrastructure
         /// </summary>
         internal async Task<Feed> Parse(Uri feed)
         {
-            using var feedData = await client.GetAsync(feed.AbsoluteUri, HttpCompletionOption.ResponseHeadersRead);
+            using var feedData = await HttpClient.GetAsync(feed.AbsoluteUri, HttpCompletionOption.ResponseHeadersRead);
 
             var parsedFeed = new Feed { Link = feed };
 
-            using var reader = XmlReader.Create(await feedData.Content.ReadAsStreamAsync());
+            using var reader = XmlReader.Create(await feedData.Content.ReadAsStreamAsync(), new XmlReaderSettings
+            {
+                DtdProcessing = _configuration.Strict ? DtdProcessing.Prohibit : DtdProcessing.Parse,
+                MaxCharactersFromEntities = _configuration.MaxDtdCharacters,
+                Async = true
+            });
 
-            while (reader.Read())
+            while (await reader.ReadAsync())
                 if (reader.NodeType == XmlNodeType.Element)
                     break;
 
@@ -56,7 +65,7 @@ namespace FeedMD.Infrastructure
                         ISyndicationItem item = await feedReader.ReadItem();
                         var updated = item.Published.UtcDateTime == DateTime.MinValue ? item.LastUpdated.UtcDateTime : item.Published.UtcDateTime;
 
-                        if (updated > configuration.Start && updated < configuration.End)
+                        if (updated > _configuration.Start && updated < _configuration.End)
                         {
                             parsedFeed.Items.Add(new FeedItem
                             {
@@ -66,7 +75,7 @@ namespace FeedMD.Infrastructure
                                 Content = item.Description
                             });
                         }
-                        else if (updated < configuration.Start)
+                        else if (updated < _configuration.Start)
                             return parsedFeed;
                         break;
                     case SyndicationElementType.Link:

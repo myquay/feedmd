@@ -1,17 +1,9 @@
-﻿using CommandLine.Text;
-using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NodaTime.Text;
+﻿using NodaTime.Text;
 using NodaTime;
 using System.Globalization;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 
 namespace FeedMD.Infrastructure
 {
@@ -41,6 +33,10 @@ namespace FeedMD.Infrastructure
 
         public string? Template { get; set; }
 
+        public bool Strict { get; set; }
+        
+        public int MaxDtdCharacters { get; set; }
+        
         public static Configuration? Load(BuildOptions opts)
         {
             //Defaults
@@ -88,6 +84,12 @@ namespace FeedMD.Infrastructure
             //Set verbose
             configuration.Verbose = opts?.Verbose ?? configuration.Verbose;
 
+            //Set parsing strictness
+            configuration.Strict = opts?.Strict ?? configuration.Strict;
+            
+            //Set max DTD characters
+            configuration.MaxDtdCharacters = opts?.MaxDtdCharacters ?? configuration.MaxDtdCharacters;
+            
             return configuration;
         }
     }

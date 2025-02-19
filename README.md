@@ -114,4 +114,6 @@ Full reference for the FeedMD utility
 * `-c` or `--configuration`: Location of the configuration file, defaults to `./config.yml` - fails if not present
 * `-t` or `--template`: Location of the template file, defaults to `./template.tmd` - if not present uses a default template saved as an embedded resource in the executable.
 * `--tz`: Time zone, overrides the one defined in the `config.yml` file
-*  `-v` or `--verbose`: Generate more output about what's going on
+* `-v` or `--verbose`: Generate more output about what's going on
+* `--strict`: Parse in strict mode (e.g. do not process DTDs), defaults to `false`
+* `--maxDtdCharacters`: Maximum number of characters to read when parsing DTDs, defaults to `1024`
